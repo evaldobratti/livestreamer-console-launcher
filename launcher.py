@@ -21,11 +21,9 @@ def get_games():
 	return games
 
 def get_streams(game):
-	#print games
-
 	url =  'https://api.twitch.tv/kraken/streams?game=' + game
 	headers = {'Accept' : 'application/vnd.twitchtv.v3+json'}
-	#print(url)
+	
 	response = requests.get(url,headers=headers)
 	if (response.status_code != requests.codes.ok):
 	    raise Exception()
@@ -38,72 +36,108 @@ def get_streams(game):
 	return streams
 
 class Menu(object):
-	def __init__(self, options, action, current_page=0):
+	def __init__(self, options, page=0, previous=None):
 		self.options = options
-		self.action = action
 		self.itens_per_page = 8
-		self.current_page = current_page
+		self.current_page = page
+		self.previous = previous
 
-	def show_options(self):
 		start_index = self.current_page * self.itens_per_page
 		final_index = start_index + self.itens_per_page
-		for i, option in enumerate(self.options[start_index:final_index]):
-			print str(i) + ' - ' + self.action.format(option)
+		self.current_options = self.options[start_index:final_index]
 
 		if len(self.options) > self.itens_per_page:
-			print str(self.itens_per_page) + ' - next page'
-			if self.current_page > 0:
-				print str(self.itens_per_page + 1) + ' - previous page'
+			self.current_options.append(NextPage(self))
+
+		if self.current_page > 0:
+			self.current_options.append(PreviousPage(self))
+
+		if self.previous:
+			self.current_options.append(Return(self.previous))
+
+	
+	def show_options(self):
+		self.current_options.append(Exit(None))
+
+		for i, option in enumerate(self.current_options):
+			print str(i) + ' - ' + option.format()
+
 
 	def interprete(self, option):
-		if option < self.itens_per_page:
-			return self.action.advance(self.options[int(option)])
-
-		if len(self.options) > self.itens_per_page:
-			if option == self.itens_per_page:
-				return Menu(self.options, self.action, self.current_page + 1)
-
-			if option == (self.itens_per_page + 1) and self.current_page > 0:
-				return Menu(self.options, self.action, self.current_page - 1)
-
+		return self.current_options[option].advance(self)
+		
 
 class MenuAction(object):
 	
-	def advance(self, option):
+	def __init__(self, option):
+		self.option = option
+
+	def advance(self, actual_menu):
 		pass
 
-	def format(self, option):
-		return str(option)
+	def format(self):
+		return str(self.option)
 
 class GameOption(MenuAction):
-	
-	def advance(self, option):
-		return Menu(get_streams(option), StreamOption())
+	def advance(self, actual_menu):
+		return Menu(map(StreamOption, get_streams(self.option)), previous=actual_menu)
 
 
 class StreamOption(MenuAction):
-	
-	def advance(self, option):
-		qualities = livestreamer.streams(option[1])
+	def advance(self, actual_menu):
+		qualities = livestreamer.streams(self.option[1])
 
-		return Menu(zip(qualities.keys(), qualities.values()) , Execute())
+		return Menu(map(Execute, zip(qualities.keys(), qualities.values())), previous=actual_menu)
 
-	def format(self, option):
-		return option[0]
+	def format(self):
+		return self.option[0]
 
 
 class Execute(MenuAction):
-	
-	def advance(self, option):
-		print option
-		subprocess.call(['vlc',option[1].url])
+	def advance(self, actual_menu):
+		subprocess.call(['vlc',self.option[1].url])
 
-	def format(self, option):
-		return option[0]
+	def format(self):
+		return self.option[0]
 
+class NextPage(MenuAction):
+	def advance(self, actual_menu):
+		return Menu(self.option.options, self.option.current_page + 1, previous=self.option.previous)
+
+	def format(self):
+		return 'next page'
+
+class PreviousPage(MenuAction):
+	def advance(self, actual_menu):
+		return Menu(self.option.options, self.option.current_page - 1, previous=self.option.previous)
+
+	def format(self):
+		return 'previous page'
+
+class Return(MenuAction):
+	def advance(self, actual_menu):
+		return Menu(self.option.options, previous=self.option.previous)
+
+	def format(self):
+		return 'return'
+
+class Exit(MenuAction):
+	def advance(self, actual_menu):
+		return None
+
+	def format(self):
+		return 'exit'
+
+class Blah(MenuAction):
+	def advance(self, actual_menu):
+		return Menu([Blah(1),Blah(2)], previous = actual_menu)
+
+	def format(self):
+		return 'lel'
 
 if __name__ == '__main__':
-	menu = Menu(get_games(), GameOption())
+	main_menu = [ Blah(None) ] + map(GameOption, get_games())
+	menu = Menu(main_menu)
 
 	while menu:
 		menu.show_options()
