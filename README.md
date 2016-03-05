@@ -45,6 +45,7 @@ and finally choose a quality
 7 - best
 8 - Return to previous menu
 9 - Exit
+>
 ```
 
 Every stream you open will be saved to easy later acess with ```Last opened online```
