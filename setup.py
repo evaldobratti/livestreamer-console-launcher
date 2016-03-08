@@ -5,6 +5,7 @@ setup(name='twitchlauncher',
       description='Console livestreamer launcher from twitch streams.',
       keywords='livestreamer twitch',
       url='https://github.com/evaldobratti/twitchlauncher',
+      download_url = 'https://github.com/evaldobratti/twitchlauncher/0.1',
       author='Evaldo Bratti',
       author_email='evaldo.bratti@gmail.com',
       license='WTFPL',
@@ -12,4 +13,4 @@ setup(name='twitchlauncher',
       entry_points={
           "console_scripts": ["twitchlauncher=twitchlauncher:main"]
       },
-      install_requires=['requests', 'requests[security]', 'livestreamer'])
+      install_requires=['requests', 'livestreamer'])
