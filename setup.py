@@ -1,11 +1,11 @@
 from setuptools import setup
 
 setup(name='twitchlauncher',
-      version='0.1',
+      version='0.2',
       description='Console livestreamer launcher from twitch streams.',
       keywords='livestreamer twitch',
       url='https://github.com/evaldobratti/twitchlauncher',
-      download_url = 'https://github.com/evaldobratti/twitchlauncher/0.1',
+      download_url = 'https://github.com/evaldobratti/twitchlauncher/0.2',
       author='Evaldo Bratti',
       author_email='evaldo.bratti@gmail.com',
       license='WTFPL',
