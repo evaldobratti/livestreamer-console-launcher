@@ -30,6 +30,14 @@ def get_streams(game):
 	
 	return json_response['streams']
 
+def file_config_name():
+	home = os.path.expanduser('~')
+	basedir = os.path.join(home, '.twitchlauncher')
+
+	if not os.path.exists(basedir):
+		os.mkdir(basedir)
+
+	return os.path.join(basedir, 'data.txt')
 
 def save_stream_opened(last_opened):
 	old_streams = load_saved()
@@ -39,14 +47,14 @@ def save_stream_opened(last_opened):
 
 	old_streams.insert(0, last_opened)
 
-	with open('streams.txt', 'w') as f:
+	with open(file_config_name(), 'w') as f:
 		for stream in old_streams[0:10]:
 			f.write(str(stream) + '\n')
 
 
 def load_saved():
 	streams = []
-	with open('streams.txt', 'r+') as f:
+	with open(file_config_name(), 'a+') as f:
 		for line in f:
 			streams.append(eval(line))
 
