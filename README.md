@@ -1,4 +1,4 @@
-# livestreamer-console-launcher
+# twitch launcher
 
 A small program to navigate online streams on twitch and launch them via livestreamer.
 
