@@ -12,15 +12,11 @@ def get_games():
 	headers = {'Accept' : 'application/vnd.twitchtv.v3+json'}
 	response = requests.get(url,headers=headers)
 	if(response.status_code != requests.codes.ok):
-		raise Exception()
+		raise Exception('It was not possible to retrieve online games, try again later.')
 
 	json_response = response.json()
 
-	games = []
-	for game in json_response['top']:
-		games.append(game['game']['name'])
-
-	return games
+	return map(lambda x: x['game']['name'], json_response['top'])
 
 def get_streams(game):
 	url =  'https://api.twitch.tv/kraken/streams?limit=100&game=' + game
@@ -28,7 +24,7 @@ def get_streams(game):
 	
 	response = requests.get(url,headers=headers)
 	if (response.status_code != requests.codes.ok):
-	    raise Exception()
+	    raise Exception('It was not possible to retrieve online streams for ' + game + ', try again later.')
 
 	json_response = response.json()
 	
@@ -108,7 +104,7 @@ class Execute(MenuAction):
 		return self.option[0]
 
 
-if __name__ == '__main__':
+def main():
 	main_menu = [ShowFavorites()] + map(GameOption, get_games())
 	menu = Menu(main_menu)
 
